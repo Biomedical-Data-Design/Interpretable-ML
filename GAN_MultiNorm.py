@@ -3,7 +3,10 @@ from torch import nn
 import scipy.stats as stats
 import matplotlib.pyplot as plt
 import os
+import numpy as np
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+
+#%%
 class Discriminator(nn.Module):
     def __init__(self):
         super().__init__()
@@ -33,10 +36,12 @@ class Generator(nn.Module):
         output = self.model(x)
         return output
 
-train_data_length = 6000
+
+#%%
+train_data_length = 15000 #need to be dividable by batch_size
 train_data = torch.zeros((train_data_length, 3))
 rho01=0;rho02=0;rho12=0
-sigma = [[1, rho01, rho02], [rho01, 1, rho12], [rho02, rho12, 1]]
+sigma = [[20, rho01, rho02], [rho01, 30, rho12], [rho02, rho12, 10]]
 mu = [2, 3, 4]
 dstr = stats.multivariate_normal(mean=mu, cov=sigma)
 x1=[];x2=[];x3=[]
@@ -54,6 +59,8 @@ train_loader = torch.utils.data.DataLoader(
     train_set, batch_size=batch_size, shuffle=True
 )
 
+
+#%%
 discriminator = Discriminator()
 generator = Generator()
 
@@ -101,7 +108,9 @@ for epoch in range(num_epochs):
             print(f"Epoch: {epoch} Loss D.: {loss_discriminator}")
             print(f"Epoch: {epoch} Loss G.: {loss_generator}")
 
-latent_space_samples = torch.randn(500000, 3)
+
+#%%
+latent_space_samples = torch.randn(10000, 3)
 generated_samples = generator(latent_space_samples)
 generated_samples = generated_samples.detach()
 
@@ -111,19 +120,103 @@ generated_samples = generated_samples.detach()
 #     if (abs(generated_samples[i,1]-3)<=ep)&(abs(generated_samples[i,2]-4)<=ep):
 #         g_s_x1.append(generated_samples[i,0])
 
-l1=train_data[:, 1].tolist()
-plt.subplot(121)
+#%%
+mean_x_hat_0 = np.mean(np.array(generated_samples[:, 0]))
+var_x_hat_0 = np.var(np.array(generated_samples[:, 0]))
+mean_x_hat_1 = np.mean(np.array(generated_samples[:, 1]))
+var_x_hat_1 = np.var(np.array(generated_samples[:, 1]))
+mean_x_hat_2 = np.mean(np.array(generated_samples[:, 2]))
+var_x_hat_2 = np.var(np.array(generated_samples[:, 2]))
+
+#%%
+def kl_divergence(mean1, var1, mean2, var2):
+    return np.log(var2/var1) + (var1 ** 2 + (mean1 - mean2) ** 2) / (2 * var2 ** 2) - 1/2
+
+
+def kl_mvn(m0, S0, m1, S1):
+    """
+    https://stackoverflow.com/questions/44549369/kullback-leibler-divergence-from-gaussian-pm-pv-to-gaussian-qm-qv
+    The following function computes the KL-Divergence between any two 
+    multivariate normal distributions 
+    (no need for the covariance matrices to be diagonal)
+    Kullback-Liebler divergence from Gaussian pm,pv to Gaussian qm,qv.
+    Also computes KL divergence from a single Gaussian pm,pv to a set
+    of Gaussians qm,qv.
+    Diagonal covariances are assumed.  Divergence is expressed in nats.
+    - accepts stacks of means, but only one S0 and S1
+    From wikipedia
+    KL( (m0, S0) || (m1, S1))
+         = .5 * ( tr(S1^{-1} S0) + log |S1|/|S0| + 
+                  (m1 - m0)^T S1^{-1} (m1 - m0) - N )
+    # 'diagonal' is [1, 2, 3, 4]
+    tf.diag(diagonal) ==> [[1, 0, 0, 0]
+                          [0, 2, 0, 0]
+                          [0, 0, 3, 0]
+                          [0, 0, 0, 4]]
+    # See wikipedia on KL divergence special case.              
+    #KL = 0.5 * tf.reduce_sum(1 + t_log_var - K.square(t_mean) - K.exp(t_log_var), axis=1)   
+                if METHOD['name'] == 'kl_pen':
+                self.tflam = tf.placeholder(tf.float32, None, 'lambda')
+                kl = tf.distributions.kl_divergence(oldpi, pi)
+                self.kl_mean = tf.reduce_mean(kl)
+                self.aloss = -(tf.reduce_mean(surr - self.tflam * kl))                               
+    """
+    # store inv diag covariance of S1 and diff between means
+    N = m0.shape[0]
+    iS1 = np.linalg.inv(S1)
+    diff = m1 - m0
+
+    # kl is made of three terms
+    tr_term   = np.trace(iS1 @ S0)
+    det_term  = np.log(np.linalg.det(S1)/np.linalg.det(S0)) #np.sum(np.log(S1)) - np.sum(np.log(S0))
+    quad_term = diff.T @ np.linalg.inv(S1) @ diff #np.sum( (diff*diff) * iS1, axis=1)
+    #print(tr_term,det_term,quad_term)
+    return .5 * (tr_term + det_term + quad_term - N) 
+
+#%%
+result_mean = np.array([mean_x_hat_0, mean_x_hat_1,mean_x_hat_2])
+result_var = np.diag(np.array([var_x_hat_0, var_x_hat_1, var_x_hat_2]))
+Kl_mvn = kl_mvn(np.array(mu), np.array(sigma), result_mean, result_var)
+
+#%%
+
+plt.figure(figsize=(15,10))
+
+plt.suptitle('GAN analysis with KL loss = ' + str(Kl_mvn))
+
+l1=train_data[:, 0].tolist()
+plt.subplot(321)
 plt.hist(l1,100,density=True)
+plt.xlabel('X_1; mean=2; var=20')
+plt.ylabel('Density')
 
-l2=generated_samples[:, 1].tolist()
-plt.subplot(122)
+l2=generated_samples[:, 0].tolist()
+plt.subplot(322)
 plt.hist(l2,100,density=True)
+plt.xlabel('X_1_hat; mean='+str(mean_x_hat_0)+'; var='+str(var_x_hat_0)+'')
 
-# plt.subplot(223)
-# plt.plot(g_s_x1)
+l3=train_data[:, 1].tolist()
+plt.subplot(323)
+plt.hist(l1,100,density=True)
+plt.xlabel('X_2; mean=3; var=30')
+plt.ylabel('Density')
+
+l4=generated_samples[:, 1].tolist()
+plt.subplot(324)
+plt.hist(l2,100,density=True)
+plt.xlabel('X_2_hat; mean='+str(mean_x_hat_1)+'; var='+str(var_x_hat_1)+'')
+
+
+l3=train_data[:, 2].tolist()
+plt.subplot(325)
+plt.hist(l1,100,density=True)
+plt.xlabel('X_3; mean=4; var=10')
+plt.ylabel('Density')
+
+
+l4=generated_samples[:, 2].tolist()
+plt.subplot(326)
+plt.hist(l2,100,density=True)
+plt.xlabel('X_3_hat; mean='+str(mean_x_hat_2)+'; var='+str(var_x_hat_2)+'')
+
 plt.show()
-# # plt.subplot(224)
-# # plt.hist(g_s_x1,density=True)
-# # plt.show()
-# print(len(g_s_x1))
-# print(g_s_x1)

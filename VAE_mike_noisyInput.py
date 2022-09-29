@@ -9,8 +9,8 @@ import numpy as np
 from sklearn import preprocessing
 
 #%%
-mean = np.array([20, 30])
-cov = [[1, 0], [0, 100]]  # diagonal covariance
+mean = np.array([2, 3, 4])
+cov = [[20, 0,0], [0, 30,0], [0,0,10]]  # diagonal covariance
 
 dataset = np.random.multivariate_normal(mean, cov, 10000)
 dataset = dataset.astype(np.float32)
@@ -116,29 +116,21 @@ def generate(num_data_generated,latent_shape_0, latent_shape_1, VAE_model):
 #                                              training starts                                            #
 ###########################################################################################################
 batch_size = 256
-latent_size = 2
-input_size = 2
+latent_size = 3
+input_size = 3
 
 model = VAE(latent_size, input_size)
 train(model, num_epochs = 600, batch_size = batch_size, learning_rate = 0.005)
 #%%
-num_data_generated = 2000
+num_data_generated = 10000
 latent_shape_0 = 1
-latent_shape_1 = 2
+latent_shape_1 = 3
 VAE_model = model
 result = generate(num_data_generated,latent_shape_0, latent_shape_1, VAE_model)
 
-# result = []
-# for i in range(2000):
-#   rinpt = torch.randn(1, 2)
-#   with torch.no_grad():
-#     si = model.decode(rinpt).numpy()
-#   result.append(si)
-  
-
 #%%
-testing_dataset = np.random.multivariate_normal(mean, cov, 3000)
-testing_dataset = testing_dataset.astype(np.float32)
+# testing_dataset = np.random.multivariate_normal(mean, cov, 10000)
+# testing_dataset = testing_dataset.astype(np.float32)
 
 
 #%%
@@ -155,13 +147,15 @@ plt.title("VAE label points 2d gaussian")
 plt.show()
 
 #%%
-var_0 = result_new[:,0].var()
-mean_0 = result_new[:,0].mean()
-var_1 = result_new[:,1].var()
-mean_1 = result_new[:,1].mean()
+var_x_hat_0 = result_new[:,0].var()
+mean_x_hat_0 = result_new[:,0].mean()
+var_x_hat_1 = result_new[:,1].var()
+mean_x_hat_1 = result_new[:,1].mean()
+var_x_hat_2 = result_new[:,2].var()
+mean_x_hat_2 = result_new[:,2].mean()
 
-result_mean = np.array([mean_0, mean_1])
-result_var = np.diag(np.array([var_0, var_1]))
+result_mean = np.array([mean_x_hat_0, mean_x_hat_1,mean_x_hat_2])
+result_var = np.diag(np.array([var_x_hat_0, var_x_hat_1, var_x_hat_2]))
 
 
 #%%
@@ -213,3 +207,46 @@ def kl_mvn(m0, S0, m1, S1):
 
 #%%
 Kl_mvn = kl_mvn(mean, cov, result_mean, result_var)
+
+
+#%%
+plt.figure(figsize=(15,10))
+
+plt.suptitle('VAE analysis with KL loss = ' + str(Kl_mvn))
+
+l1=dataset[:, 0].tolist()
+plt.subplot(321)
+plt.hist(l1,100,density=True)
+plt.xlabel('X_1; mean=2; var=20')
+plt.ylabel('Density')
+
+l2=result_new[:, 0].tolist()
+plt.subplot(322)
+plt.hist(l2,100,density=True)
+plt.xlabel('X_1_hat; mean='+str(mean_x_hat_0)+'; var='+str(var_x_hat_0)+'')
+
+l3=dataset[:, 1].tolist()
+plt.subplot(323)
+plt.hist(l1,100,density=True)
+plt.xlabel('X_2; mean=3; var=30')
+plt.ylabel('Density')
+
+l4=result_new[:, 1].tolist()
+plt.subplot(324)
+plt.hist(l2,100,density=True)
+plt.xlabel('X_2_hat; mean='+str(mean_x_hat_1)+'; var='+str(var_x_hat_1)+'')
+
+
+l3=dataset[:, 2].tolist()
+plt.subplot(325)
+plt.hist(l1,100,density=True)
+plt.xlabel('X_3; mean=4; var=10')
+plt.ylabel('Density')
+
+
+l4=result_new[:, 2].tolist()
+plt.subplot(326)
+plt.hist(l2,100,density=True)
+plt.xlabel('X_3_hat; mean='+str(mean_x_hat_2)+'; var='+str(var_x_hat_2)+'')
+
+plt.show()
