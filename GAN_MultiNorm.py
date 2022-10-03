@@ -197,26 +197,26 @@ plt.xlabel('X_1_hat; mean='+str(mean_x_hat_0)+'; var='+str(var_x_hat_0)+'')
 
 l3=train_data[:, 1].tolist()
 plt.subplot(323)
-plt.hist(l1,100,density=True)
+plt.hist(l3,100,density=True)
 plt.xlabel('X_2; mean=3; var=30')
 plt.ylabel('Density')
 
 l4=generated_samples[:, 1].tolist()
 plt.subplot(324)
-plt.hist(l2,100,density=True)
+plt.hist(l4,100,density=True)
 plt.xlabel('X_2_hat; mean='+str(mean_x_hat_1)+'; var='+str(var_x_hat_1)+'')
 
 
-l3=train_data[:, 2].tolist()
+l5=train_data[:, 2].tolist()
 plt.subplot(325)
-plt.hist(l1,100,density=True)
+plt.hist(l5,100,density=True)
 plt.xlabel('X_3; mean=4; var=10')
 plt.ylabel('Density')
 
 
-l4=generated_samples[:, 2].tolist()
+l6=generated_samples[:, 2].tolist()
 plt.subplot(326)
-plt.hist(l2,100,density=True)
+plt.hist(l6,100,density=True)
 plt.xlabel('X_3_hat; mean='+str(mean_x_hat_2)+'; var='+str(var_x_hat_2)+'')
 
 plt.show()
