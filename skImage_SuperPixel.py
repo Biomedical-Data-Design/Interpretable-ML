@@ -9,12 +9,12 @@ Created on Mon Oct 31 17:01:06 2022
 from skimage.segmentation import slic
 from skimage.segmentation import mark_boundaries
 from skimage.util import img_as_float
-from skimage import io
+from skimage import io, color
 import matplotlib.pyplot as plt
 import argparse
 
 # load the image and convert it to a floating point data type
-image = img_as_float(io.imread("XRay.jpeg"))
+image = img_as_float(io.imread("./superpixel_eg.png"))
 # image = img_as_float(io.imread("a9159b11-ba49-4885-902e-00c8d5095b98.png"))
 
 
@@ -30,3 +30,10 @@ plt.axis("off")
 
 # show the plots
 plt.show()
+
+# transform to superpixel
+superpixel = color.label2rgb(segments, image, kind='avg')
+
+#%%
+
+#%%
