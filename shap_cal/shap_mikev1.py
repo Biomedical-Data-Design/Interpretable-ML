@@ -45,11 +45,11 @@ print(model)
 
 #%%
 image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/1f8f08ea-b5b3-4f68-94d4-3cc071b7dce8.png'
-resized_image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/original.png'
+# resized_image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/original.png'
 image_o = Image.open(image_path)
-newsize = (256, 256)
-image = image_o.resize(newsize)
-image.save(resized_image_path)
+# newsize = (256, 256)
+# image = image_o.resize(newsize)
+# image.save(resized_image_path)
 mean = torch.tensor([0.485, 0.456, 0.406])
 std = torch.tensor([0.229, 0.224, 0.225])
 transform = transforms.Compose(
@@ -63,11 +63,11 @@ prep_img_o = torch.unsqueeze(image_to, 0)
 prob_scores_o = model(prep_img_o).detach().numpy()[0]
 cl_o, baseline_v_o = np.argmax(prob_scores_o), prob_scores_o[np.argmax(prob_scores_o)]
 
-print("after resize")
-image_t = transform(image).to(device)
-prep_img = torch.unsqueeze(image_t, 0)
-prob_scores = model(prep_img).detach().numpy()[0]
-cl, baseline_v = np.argmax(prob_scores), prob_scores[np.argmax(prob_scores)]
+# print("after resize")
+# image_t = transform(image).to(device)
+# prep_img = torch.unsqueeze(image_t, 0)
+# prob_scores = model(prep_img).detach().numpy()[0]
+# cl, baseline_v = np.argmax(prob_scores), prob_scores[np.argmax(prob_scores)]
 cl = 1
 
 
@@ -75,12 +75,12 @@ cl = 1
 
 
 #%%
-directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap'
-mean = torch.tensor([0.485, 0.456, 0.406])
-std = torch.tensor([0.229, 0.224, 0.225])
-transform = transforms.Compose(
-    [transforms.ToTensor(), transforms.Normalize(mean=mean, std=std)]
-)
+directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/large_size'
+# mean = torch.tensor([0.485, 0.456, 0.406])
+# std = torch.tensor([0.229, 0.224, 0.225])
+# transform = transforms.Compose(
+#     [transforms.ToTensor(), transforms.Normalize(mean=mean, std=std)]
+# )
 
 #%%
 def exclude_k_matrics_calculation(k,directory, M):
@@ -97,7 +97,7 @@ def exclude_k_matrics_calculation(k,directory, M):
             f = os.path.join(directory, filename)
             # checking if it is a file
             if os.path.isfile(f) and f[-4:] == '.png' and "output" in filename:
-                ext = filename[6:-4]
+                ext = filename[16:-4]
                 players_excluded = list(ext)
                 players_excluded = [int(i) for i in players_excluded]
                 players = all_players.copy()
@@ -118,7 +118,7 @@ def exclude_k_matrics_calculation(k,directory, M):
                 image_t = transform(image).to(device)
                 prep_img = torch.unsqueeze(image_t, 0)
                 
-                print(prep_img.shape)
+                # print(prep_img.shape)
                 prob_scores = model(prep_img).detach().numpy()[0]
                 # print(prob_scores)
                 p = prob_scores[cl]
