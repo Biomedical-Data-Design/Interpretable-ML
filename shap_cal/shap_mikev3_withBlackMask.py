@@ -19,6 +19,9 @@ from PIL import Image
 from tqdm import tqdm
 from itertools import combinations 
 import math
+import itertools
+import cv2
+import matplotlib.pyplot as plt
 # import cv2
 # select device
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -46,29 +49,68 @@ print(model)
 #%%
 image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/1f8f08ea-b5b3-4f68-94d4-3cc071b7dce8.png'
 resized_image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/original.png'
-image_o = Image.open(image_path)
-newsize = (256, 256)
-image = image_o.resize(newsize)
-image.save(resized_image_path)
-mean = torch.tensor([0.485, 0.456, 0.406])
-std = torch.tensor([0.229, 0.224, 0.225])
-transform = transforms.Compose(
-    [transforms.ToTensor(), transforms.Normalize(mean=mean, std=std)]
-)
+# image_o = Image.open(image_path)
 
 
-print("before resize")
-image_to = transform(image_o).to(device)
-prep_img_o = torch.unsqueeze(image_to, 0)
-prob_scores_o = model(prep_img_o).detach().numpy()[0]
-cl_o, baseline_v_o = np.argmax(prob_scores_o), prob_scores_o[np.argmax(prob_scores_o)]
+#%%
 
-print("after resize")
-image_t = transform(image).to(device)
-prep_img = torch.unsqueeze(image_t, 0)
-prob_scores = model(prep_img).detach().numpy()[0]
-cl, baseline_v = np.argmax(prob_scores), prob_scores[np.argmax(prob_scores)]
-cl = 1
+def mask_generate(I,k,grey_area):
+    shape1=I.shape[0]//(2**k)
+    shape2=I.shape[1]//(2**k)
+    for i in range(len(grey_area)):
+        row=grey_area[i]//(2**k)
+        col=grey_area[i]-row*(2**k)
+        if col==0:
+            col=2**k
+        col-=1
+        startr=row*shape1;endr=(row+1)*shape1
+        startc=col*shape2;endc=(col+1)*shape2
+        I[startr:endr,startc:endc,:]=0
+    return I
+
+k=1     ### 2^(2*k)
+grey_area = [1, 3]  ###block number
+I=cv2.imread(image_path)   ###path
+I_m=mask_generate(I,k,grey_area)
+plt.imshow(I_m)
+plt.show()
+
+
+
+#%%
+
+
+numbers = [1, 2, 3]
+combinations = []
+for r in range(len(numbers)+1):
+    for combination in itertools.combinations(numbers, r):
+        combinations.append(combination)
+print(combinations)
+
+#%%
+
+# newsize = (256, 256)
+# image = image_o.resize(newsize)
+# image.save(resized_image_path)
+# mean = torch.tensor([0.485, 0.456, 0.406])
+# std = torch.tensor([0.229, 0.224, 0.225])
+# transform = transforms.Compose(
+#     [transforms.ToTensor(), transforms.Normalize(mean=mean, std=std)]
+# )
+
+
+# print("before resize")
+# image_to = transform(image_o).to(device)
+# prep_img_o = torch.unsqueeze(image_to, 0)
+# prob_scores_o = model(prep_img_o).detach().numpy()[0]
+# cl_o, baseline_v_o = np.argmax(prob_scores_o), prob_scores_o[np.argmax(prob_scores_o)]
+
+# print("after resize")
+# image_t = transform(image).to(device)
+# prep_img = torch.unsqueeze(image_t, 0)
+# prob_scores = model(prep_img).detach().numpy()[0]
+# cl, baseline_v = np.argmax(prob_scores), prob_scores[np.argmax(prob_scores)]
+# cl = 1
 
 
 

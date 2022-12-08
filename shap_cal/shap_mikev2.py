@@ -19,7 +19,7 @@ from PIL import Image
 from tqdm import tqdm
 from itertools import combinations 
 import math
-# import cv2
+import cv2
 # select device
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -48,8 +48,13 @@ image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Ma
 resized_image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/original.png'
 image_o = Image.open(image_path)
 newsize = (256, 256)
+newsize2 = (1600,1200)
 image = image_o.resize(newsize)
 image.save(resized_image_path)
+
+image_scale = image.resize(newsize2)
+
+
 mean = torch.tensor([0.485, 0.456, 0.406])
 std = torch.tensor([0.229, 0.224, 0.225])
 transform = transforms.Compose(
@@ -57,32 +62,61 @@ transform = transforms.Compose(
 )
 
 
+
+
 print("before resize")
+image_o.show()
+# print(image_o.shape)
 image_to = transform(image_o).to(device)
+# image_to.show()
 prep_img_o = torch.unsqueeze(image_to, 0)
-prob_scores_o = model(prep_img_o).detach().numpy()[0]
-cl_o, baseline_v_o = np.argmax(prob_scores_o), prob_scores_o[np.argmax(prob_scores_o)]
+prob_scores_o = model(prep_img_o).detach().numpy()
+print(prob_scores_o)
+# cl_o, baseline_v_o = np.argmax(prob_scores_o), prob_scores_o[np.argmax(prob_scores_o)]
 
 print("after resize")
+image.show()
 image_t = transform(image).to(device)
+
 prep_img = torch.unsqueeze(image_t, 0)
-prob_scores = model(prep_img).detach().numpy()[0]
-cl, baseline_v = np.argmax(prob_scores), prob_scores[np.argmax(prob_scores)]
-cl = 1
+prob_scores = model(prep_img).detach().numpy()
+print(prob_scores)
+
+# cl, baseline_v = np.argmax(prob_scores), prob_scores[np.argmax(prob_scores)]
+# cl = 1
 
 
+print("after scaling")
+image_scale.show()
+image_s = transform(image_scale).to(device)
 
+prep_img_s = torch.unsqueeze(image_s, 0)
+prob_scores_s = model(prep_img_s).detach().numpy()
+print(prob_scores_s)
+# cl_s, baseline_v_s = np.argmax(prob_scores_s), prob_scores_s[np.argmax(prob_scores_s)]
 
 
 #%%
 directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap'
-mean = torch.tensor([0.485, 0.456, 0.406])
-std = torch.tensor([0.229, 0.224, 0.225])
-transform = transforms.Compose(
-    [transforms.ToTensor(), transforms.Normalize(mean=mean, std=std)]
-)
+
 
 #%%
+def ToCV2ImageShape(PytorchImage):
+    num_channels, num_row, num_col = PytorchImage.shape
+    CV2Image = np.ones((num_row, num_col,num_channels)).astype('uint8')
+    for i in range(num_channels):
+        CV2Image[:,:,i] = PytorchImage[i,:,:]
+    return CV2Image
+
+    
+def ToPytorchImageShape(CV2Image):
+    num_row, num_col, num_channels = CV2Image.shape
+    PytorchImage = np.ones((num_channels, num_row, num_col)).astype('uint8')
+    for i in range(num_channels):
+        PytorchImage[i,:,:] = CV2Image[:,:,i] 
+    return PytorchImage
+
+
 def exclude_k_matrics_calculation(k,directory, M):
     exclude_player2_list = []
     exclude_player2_team_index_list = []
@@ -115,10 +149,26 @@ def exclude_k_matrics_calculation(k,directory, M):
                 # print(players)
                 player_list.append(players)
                 image = Image.open(directory+"/"+filename)
-                image_t = transform(image).to(device)
-                prep_img = torch.unsqueeze(image_t, 0)
+                # image = plt.imread(directory+"/"+filename)
+                image_t = image.resize((1200,1600))
+                # image_t = transform(image).to(device)
+                # plt.imshow(image)
+                # plt.show()
+                # image_t = image
+                # # print(image_t.shape)
+                # # image_scaled = ToCV2ImageShape(image_t)
+                # # print(image_scaled.shape)
+                # prep_img = cv2.resize(image_t,(1600,1200))
+                # plt.imshow(prep_img)
+                # plt.show()
+                # print(prep_img.shape)
+                # prep_img = ToPytorchImageShape(prep_img)
+                # prep_img = Image.fromarray(prep_img, "RGB")
+                prep_img = transform(image_t).to(device)
                 
-                print(prep_img.shape)
+                prep_img = torch.unsqueeze(torch.tensor(prep_img).float(), 0)
+                # print(prep_img.dtype)
+                # prep_img = transform(prep_img).to(device)
                 prob_scores = model(prep_img).detach().numpy()[0]
                 # print(prob_scores)
                 p = prob_scores[cl]
