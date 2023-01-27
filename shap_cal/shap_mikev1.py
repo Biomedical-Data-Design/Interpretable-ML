@@ -163,7 +163,16 @@ def shap_main(k_list, directory, M):
 #%%
 k_list = list(range(1,M+1))
 shap_value_list = shap_main(k_list,directory, M)
+#%%
+image_out = np.asarray(image_o).copy()
 
+red_ratio_array = np.array([[0.03864981288400789, 0.1004361535112063],[0.7422940880060196, 0.04874143462317686]])
+for i in range(2):
+    for j in range(2):
+        image_out[600*i:600*(i+1),800*j:800*(j+1),0] = image_out[600*i:600*(i+1),800*j:800*(j+1),0]+255*red_ratio_array[int(i),int(j)]
+
+plt.imshow(image_out)
+plt.show()
 
 
 
