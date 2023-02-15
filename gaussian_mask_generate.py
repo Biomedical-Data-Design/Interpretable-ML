@@ -29,3 +29,4 @@ if __name__ == "__main__":
     plt.imshow(I_m)
     plt.show()
     cv2.imwrite("./a9159b11-ba49-4885-902e-00c8d5095b98_mask.png", I_m)
+#%%
