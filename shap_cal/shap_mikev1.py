@@ -47,8 +47,8 @@ print(model)
 image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/1f8f08ea-b5b3-4f68-94d4-3cc071b7dce8.png'
 # resized_image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/original.png'
 image_o = Image.open(image_path)
-# newsize = (256, 256)
-# image = image_o.resize(newsize)
+newsize = (256, 256)
+image = image_o.resize(newsize)
 # image.save(resized_image_path)
 mean = torch.tensor([0.485, 0.456, 0.406])
 std = torch.tensor([0.229, 0.224, 0.225])
@@ -61,12 +61,14 @@ print("before resize")
 image_to = transform(image_o).to(device)
 prep_img_o = torch.unsqueeze(image_to, 0)
 prob_scores_o = model(prep_img_o).detach().numpy()[0]
+print(prob_scores_o)
 cl_o, baseline_v_o = np.argmax(prob_scores_o), prob_scores_o[np.argmax(prob_scores_o)]
 
-# print("after resize")
-# image_t = transform(image).to(device)
-# prep_img = torch.unsqueeze(image_t, 0)
-# prob_scores = model(prep_img).detach().numpy()[0]
+print("after resize")
+image_t = transform(image).to(device)
+prep_img = torch.unsqueeze(image_t, 0)
+prob_scores = model(prep_img).detach().numpy()[0]
+print(prob_scores)
 # cl, baseline_v = np.argmax(prob_scores), prob_scores[np.argmax(prob_scores)]
 cl = 1
 
@@ -75,7 +77,7 @@ cl = 1
 
 
 #%%
-directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/large_size'
+directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/small_size'
 # mean = torch.tensor([0.485, 0.456, 0.406])
 # std = torch.tensor([0.229, 0.224, 0.225])
 # transform = transforms.Compose(
@@ -97,8 +99,10 @@ def exclude_k_matrics_calculation(k,directory, M):
             f = os.path.join(directory, filename)
             # checking if it is a file
             if os.path.isfile(f) and f[-4:] == '.png' and "output" in filename:
-                ext = filename[16:-4]
+                ext = filename[7:-4]
+                # print(ext)
                 players_excluded = list(ext)
+                # print(players_excluded)
                 players_excluded = [int(i) for i in players_excluded]
                 players = all_players.copy()
                 for excludedPalyerId in players_excluded: 

@@ -28,7 +28,7 @@ M = 4 # total number of players
 #%%
 
 model_directory = 'prediction_model/'
-filename = model_directory + 'model.pt'
+filename = model_directory + 'model_git.pt'
 model = torch.hub.load("pytorch/vision:v0.10.0", "resnet18", pretrained=False)
 num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, 2)
@@ -83,7 +83,7 @@ prob_scores = model(prep_img).detach().numpy()
 print(prob_scores)
 
 # cl, baseline_v = np.argmax(prob_scores), prob_scores[np.argmax(prob_scores)]
-# cl = 1
+cl = 1
 
 
 print("after scaling")
@@ -97,7 +97,7 @@ print(prob_scores_s)
 
 
 #%%
-directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap'
+directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/large_size'
 
 
 #%%
@@ -132,6 +132,7 @@ def exclude_k_matrics_calculation(k,directory, M):
             # checking if it is a file
             if os.path.isfile(f) and f[-4:] == '.png' and "output" in filename:
                 ext = filename[6:-4]
+                print(ext)
                 players_excluded = list(ext)
                 players_excluded = [int(i) for i in players_excluded]
                 players = all_players.copy()

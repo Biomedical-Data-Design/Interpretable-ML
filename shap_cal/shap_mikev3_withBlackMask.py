@@ -31,7 +31,7 @@ M = 4 # total number of players
 #%%
 
 model_directory = 'prediction_model/'
-filename = model_directory + 'model.pt'
+filename = model_directory + 'model_git.pt'
 model = torch.hub.load("pytorch/vision:v0.10.0", "resnet18", pretrained=False)
 num_ftrs = model.fc.in_features
 model.fc = nn.Linear(num_ftrs, 2)
@@ -110,14 +110,14 @@ print(combinations)
 # prep_img = torch.unsqueeze(image_t, 0)
 # prob_scores = model(prep_img).detach().numpy()[0]
 # cl, baseline_v = np.argmax(prob_scores), prob_scores[np.argmax(prob_scores)]
-# cl = 1
+cl = 1
 
 
 
 
 
 #%%
-directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap'
+directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/large_size'
 mean = torch.tensor([0.485, 0.456, 0.406])
 std = torch.tensor([0.229, 0.224, 0.225])
 transform = transforms.Compose(
