@@ -45,12 +45,12 @@ print(model)
 
 #%%
 image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/1f8f08ea-b5b3-4f68-94d4-3cc071b7dce8.png'
-resized_image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/original.png'
+# resized_image_path ='/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/original.png'
 image_o = Image.open(image_path)
 newsize = (256, 256)
 newsize2 = (1600,1200)
 image = image_o.resize(newsize)
-image.save(resized_image_path)
+# image.save(resized_image_path)
 
 image_scale = image.resize(newsize2)
 
@@ -84,7 +84,7 @@ image_t = transform(image).to(device)
 prep_img = torch.unsqueeze(image_t, 0)
 prob_scores = model(prep_img).detach().numpy()
 print(prob_scores)
-cl_r, baseline_v = np.argmax(prob_scores), prob_scores[np.argmax(prob_scores)]
+cl_r, baseline_v = np.argmax(prob_scores[0]), prob_scores[0][np.argmax(prob_scores[0])]
 
 
 print("after resize 2")
@@ -97,22 +97,24 @@ if cl_r != cl:
     raise Exception("prediction wrong!")
 
 #%%
-directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/small_size'
+directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/Guassian_std_100_small'
+# directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/black_masked_small'
+# directory = '/Users/mikewang/Library/CloudStorage/OneDrive-JohnsHopkins/Study/Master/Semaster_1/EN.580.697/Interpretable-ML/output_shap/small_size'
 #%%
-def ToCV2ImageShape(PytorchImage):
-    num_channels, num_row, num_col = PytorchImage.shape
-    CV2Image = np.ones((num_row, num_col,num_channels)).astype('uint8')
-    for i in range(num_channels):
-        CV2Image[:,:,i] = PytorchImage[i,:,:]
-    return CV2Image
+# def ToCV2ImageShape(PytorchImage):
+#     num_channels, num_row, num_col = PytorchImage.shape
+#     CV2Image = np.ones((num_row, num_col,num_channels)).astype('uint8')
+#     for i in range(num_channels):
+#         CV2Image[:,:,i] = PytorchImage[i,:,:]
+#     return CV2Image
 
     
-def ToPytorchImageShape(CV2Image):
-    num_row, num_col, num_channels = CV2Image.shape
-    PytorchImage = np.ones((num_channels, num_row, num_col)).astype('uint8')
-    for i in range(num_channels):
-        PytorchImage[i,:,:] = CV2Image[:,:,i] 
-    return PytorchImage
+# def ToPytorchImageShape(CV2Image):
+#     num_row, num_col, num_channels = CV2Image.shape
+#     PytorchImage = np.ones((num_channels, num_row, num_col)).astype('uint8')
+#     for i in range(num_channels):
+#         PytorchImage[i,:,:] = CV2Image[:,:,i] 
+#     return PytorchImage
 
 
 def exclude_k_matrics_calculation(k,directory, M):
@@ -193,15 +195,6 @@ def shap_main(k_list, directory, M):
 k_list = list(range(1,M+1))
 shap_value_list = shap_main(k_list,directory, M)
 
-
-
-
-#%% load image
-
-#%% generate combination index
-
-
-#%% mask generation method
 
 
 

@@ -25,7 +25,7 @@ if __name__ == "__main__":
     k=1     # 2^(2*k)
     grey_area = [1]  # block number
     I = cv2.imread('./a9159b11-ba49-4885-902e-00c8d5095b98.png')   # path
-    I_m = gaussian_mask_generate(I,k,grey_area, ksize=(55, 55), std=55)
+    I_m = gaussian_mask_generate(I,k,grey_area, ksize=(599, 799), std=10)
     plt.imshow(I_m)
     plt.show()
     cv2.imwrite("./a9159b11-ba49-4885-902e-00c8d5095b98_mask.png", I_m)
