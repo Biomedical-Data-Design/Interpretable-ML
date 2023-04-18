@@ -90,6 +90,64 @@ def train(model, num_epochs=1, batch_size=64, learning_rate=1e-3):
             optimizer.zero_grad()
 
         print('Epoch:{}, Loss:{:.4f}'.format(epoch + 1, float(loss)))
+
+
+"""
+A Convolutional Variational Autoencoder
+"""
+class ConvolutionalVAE(nn.Module):
+    def __init__(self, imgChannels=3, featureDim=32*116*116, zDim=20):
+        super(ConvolutionalVAE, self).__init__()
+
+        # Initializing the 2 convolutional layers and 2 full-connected layers for the encoder
+        self.encConv1 = nn.Conv2d(imgChannels, 16, 7)
+        self.encConv2 = nn.Conv2d(16, 32, 7)
+        self.encFC1 = nn.Linear(featureDim, zDim)
+        self.encFC2 = nn.Linear(featureDim, zDim)
+        self.flatten = nn.Flatten()
+
+        # Initializing the fully-connected layer and 2 convolutional layers for decoder
+        self.decFC1 = nn.Linear(zDim, featureDim)
+        self.decConv1 = nn.ConvTranspose2d(32, 16, 7)
+        self.decConv2 = nn.ConvTranspose2d(16, imgChannels, 7)
+
+    def encoder(self, x):
+
+        # Input is fed into 2 convolutional layers sequentially
+        # The output feature map are fed into 2 fully-connected layers to predict mean (mu) and variance (logVar)
+        # Mu and logVar are used for generating middle representation z and KL divergence loss
+        x = F.relu(self.encConv1(x))
+        x = F.relu(self.encConv2(x))
+        x = x.view(-1, 32*116*116)
+        mu = self.encFC1(x)
+        logVar = self.encFC2(x)
+        return mu, logVar
+
+    def reparameterize(self, mu, logVar):
+
+        #Reparameterization takes in the input mu and logVar and sample the mu + std * eps
+        std = torch.exp(logVar/2)
+        eps = torch.randn_like(std)
+        return mu + std * eps
+
+    def decoder(self, z):
+
+        # z is fed back into a fully-connected layers and then into two transpose convolutional layers
+        # The generated output is the same size of the original input
+        x = F.relu(self.decFC1(z))
+        x = x.view(-1, 32, 116, 116)
+        x = F.relu(self.decConv1(x))
+        x = torch.sigmoid(self.decConv2(x))
+        return x
+
+    def forward(self, x):
+
+        # The entire pipeline of the VAE: encoder -> reparameterization -> decoder
+        # output, mu, and logVar are returned for loss computation
+        mu, logVar = self.encoder(x)
+        z = self.reparameterize(mu, logVar)
+        out = self.decoder(z)
+        return out, mu, logVar
 #%%
 
 if __name__ == "__main__":
